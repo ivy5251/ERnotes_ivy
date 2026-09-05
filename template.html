@@ -229,7 +229,7 @@ mark{background:var(--hl);color:inherit;border-radius:2px;padding:0 1px}
   Array.prototype.slice.call(el.pages.children).forEach(function(a){ arts[a.dataset.slug] = a; });
 
   /* ---------- home ---------- */
-  var TYPES = ['主訴','疾病','技巧'];
+  var TYPES = ['主訴','疾病','技巧','藥物'];
   function buildHome(){
     var h = '';
     TYPES.forEach(function(t){
@@ -238,7 +238,7 @@ mark{background:var(--hl);color:inherit;border-radius:2px;padding:0 1px}
       list.sort(function(a,b){ return a.title.localeCompare(b.title,'zh-Hant'); });
       h += '<div class="grp"><p class="grp-h">' + t + ' · ' + list.length + '</p><div class="rows">';
       list.forEach(function(p){
-        h += '<a class="row' + (p.stub ? ' stub' : '') + '" href="#/' + p.slug + '">'
+        h += '<a class="row' + (p.stub ? ' stub' : '') + '" href="' + (p.href ? esc(p.href) : '#/' + p.slug) + '">'
            + '<span class="ic">' + (p.icon || '·') + '</span>'
            + '<span class="tt">' + esc(p.title) + '</span>'
            + '<span class="cc">' + esc(p.category || '') + (p.stub ? ' · 待填' : '') + '</span></a>';
@@ -296,7 +296,10 @@ mark{background:var(--hl);color:inherit;border-radius:2px;padding:0 1px}
   var pendingJump = null;
   function route(){
     var m = location.hash.match(/^#\/([^?]+)/);
-    show(m ? decodeURIComponent(m[1]) : null);
+    var want = m ? decodeURIComponent(m[1]) : null;
+    // 獨立 HTML 頁沒有 <article>，直接轉過去
+    if (want && byslug[want] && byslug[want].href){ location.replace(byslug[want].href); return; }
+    show(want);
     if (pendingJump){ var id = pendingJump; pendingJump = null; jump_(id); }
     else if (!el.q.value.trim()) window.scrollTo({top:0});
   }
@@ -371,6 +374,7 @@ mark{background:var(--hl);color:inherit;border-radius:2px;padding:0 1px}
   }
 
   function goTo(slug, id){
+    if (byslug[slug] && byslug[slug].href){ location.href = byslug[slug].href; return; }
     el.q.value = '';
     el.clr.hidden = true;
     el.results.hidden = true;

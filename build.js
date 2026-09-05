@@ -15,6 +15,8 @@ const ROOT     = __dirname;
 const CONTENT  = path.join(ROOT, 'content');
 const ASSETS   = path.join(ROOT, 'assets');
 const TEMPLATE = path.join(ROOT, 'template.html');
+// 手寫的獨立 HTML 頁（不經 markdown pipeline），原樣複製到 docs/
+const STATIC   = path.join(ROOT, 'pages');
 // GitHub Pages 只能從 repo 根目錄或 /docs 發佈，不能指定其他資料夾。
 // 所以產物直接輸出到 docs/，設定一次就不用再管。
 const OUT_DIR  = path.join(ROOT, 'docs');
@@ -262,7 +264,8 @@ function renderPage(file, src){
   // cut the body into ## sections
   const cuts = [];
   lines.forEach((l, k) => { if (/^##\s+/.test(l)) cuts.push(k); });
-  if (!cuts.length) warn(rel, '沒有任何 ## section');
+  // href 頁的內容在獨立 HTML 裡，本來就不該有 section
+  if (!cuts.length && !meta.href) warn(rel, '沒有任何 ## section');
 
   let html = '';
   cuts.forEach((start, k) => {
@@ -298,6 +301,7 @@ function renderPage(file, src){
       category: meta.category || '',
       aliases: meta.aliases || [],
       related: meta.related || [],
+      href: meta.href || '',   // 有 href = 獨立 HTML 頁，不是 markdown 內容
       stub
     },
     refLabel: meta.ref_label || '',
@@ -312,7 +316,7 @@ function relatedBlock(page, byslug){
   let h = '';
   if (rel.length){
     h += `<div class="rel"><h2>相關頁面</h2>`;
-    ['疾病', '技巧', '主訴'].forEach(t => {
+    ['疾病', '技巧', '主訴', '藥物'].forEach(t => {
       const g = rel.filter(p => p.meta.type === t);
       if (!g.length) return;
       h += `<p class="rel-label">相關${t}</p><div class="chips">`;
@@ -370,7 +374,7 @@ function build(){
     seen[p.meta.slug] = 1;
   });
 
-  const articles = pages.map(p =>
+  const articles = pages.filter(p => !p.meta.href).map(p =>
     `<article class="page" data-slug="${p.meta.slug}" hidden>${p.html}${relatedBlock(p, byslug)}</article>`
   ).join('\n');
 
@@ -393,11 +397,27 @@ function build(){
   // 讓 GitHub Pages 跳過 Jekyll。沒有這個檔，開頭是 _ 的檔案會被靜靜忽略。
   fs.writeFileSync(path.join(OUT_DIR, '.nojekyll'), '');
 
+  // 獨立 HTML 頁原樣複製過去
+  const copied = [];
+  if (fs.existsSync(STATIC)){
+    fs.readdirSync(STATIC).filter(f => f.endsWith('.html')).forEach(f => {
+      fs.copyFileSync(path.join(STATIC, f), path.join(OUT_DIR, f));
+      copied.push(f);
+    });
+  }
+  // href 指向不存在的檔案，跟 related 斷鏈一樣是會靜靜壞掉的東西
+  pages.filter(p => p.meta.href).forEach(p => {
+    if (!fs.existsSync(path.join(OUT_DIR, p.meta.href))) {
+      warn(p.meta.slug, `href 指向不存在的檔案：${p.meta.href}`);
+    }
+  });
+
   const kb = (Buffer.byteLength(out) / 1024).toFixed(0);
   console.log(`\n  ${pages.length} 頁 · ${index.length} 個可搜尋單元 · docs/index.html ${kb} KB`);
   pages.forEach(p => {
-    console.log(`    ${p.meta.stub ? '○' : '●'} ${p.meta.type}  ${p.meta.title}  (${p.index.length})`);
+    console.log(`    ${p.meta.stub ? '○' : '●'} ${p.meta.type}  ${p.meta.title}  ${p.meta.href ? '→ ' + p.meta.href : '(' + p.index.length + ')'}`);
   });
+  copied.forEach(f => console.log(`    ⧉ 獨立頁  docs/${f}`));
   if (warnings.length){
     console.log(`\n  ⚠ ${warnings.length} 個警告`);
     warnings.forEach(w => console.log('    ' + w));
