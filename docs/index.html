@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101418" media="(prefers-color-scheme: dark)">
+<title>急診醫學筆記</title>
+<style>
+:root{
+  --bg:#ffffff; --bg-soft:#f3f6f7; --ink:#14181c; --ink-2:#5b656f;
+  --rule:#dee4e8; --red:#b3261e; --red-bg:#fdeceb; --hl:#ffeeb8;
+  --accent:#0f6e68; --tier-fatal:#b3261e; --tier-benign:#0f6e68; --tier-other:#9aa4ad;
+  --fc-box:#ffffff; --fc-line:#c3ccd3; --fc-dec:#fff5cc; --fc-dec-line:#d9a900;
+  --fc-edge:#8b959d; --fc-yes:#b3261e;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#101418; --bg-soft:#181e24; --ink:#e4e9ed; --ink-2:#97a2ac;
+    --rule:#262e36; --red:#ff8078; --red-bg:#231514; --hl:#4a3a0e;
+    --accent:#5fd0c4; --tier-fatal:#ff8078; --tier-benign:#5fd0c4; --tier-other:#6c7883;
+    --fc-box:#181e24; --fc-line:#39434d; --fc-dec:#3d3208; --fc-dec-line:#c9a227;
+    --fc-edge:#6c7883; --fc-yes:#ff8078;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  font-size:15.5px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 64px}
+[hidden]{display:none !important}
+
+/* ---------- header ---------- */
+header{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  padding:8px 16px; border-bottom:1px solid var(--rule);
+  padding-top:max(8px,env(safe-area-inset-top));
+}
+.hdr-in{max-width:720px;margin:0 auto}
+.topline{display:flex;align-items:baseline;gap:8px;min-height:20px}
+#back{
+  background:none;border:0;padding:0;font:inherit;font-size:12.5px;
+  color:var(--accent);cursor:pointer;flex:0 0 auto;
+}
+#back:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.crumb{font-size:11.5px;color:var(--ink-2);letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+h1{font-size:19px;font-weight:650;margin:1px 0 8px;letter-spacing:-.01em}
+h1 .cat{font-size:11.5px;font-weight:500;color:var(--accent);vertical-align:2px;margin-left:6px}
+.searchbar{position:relative}
+#q{
+  width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg-soft);
+  border:1px solid var(--rule);border-radius:9px;padding:9px 34px 9px 12px;appearance:none;
+}
+#q:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+#clr{
+  position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:0;
+  color:var(--ink-2);font:inherit;font-size:18px;padding:2px 8px;cursor:pointer;line-height:1;
+}
+#clr:focus-visible{outline:2px solid var(--accent);border-radius:6px}
+.jump{display:flex;gap:6px;overflow-x:auto;margin:8px -16px 0;padding:0 16px 2px;scrollbar-width:none}
+.jump::-webkit-scrollbar{display:none}
+.jump button{
+  flex:0 0 auto;font:inherit;font-size:12.5px;color:var(--ink-2);background:none;
+  border:1px solid var(--rule);border-radius:20px;padding:3px 10px;cursor:pointer;white-space:nowrap;
+}
+.jump button:hover{color:var(--ink)}
+.jump button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ---------- red flags ---------- */
+.flags{
+  background:var(--red-bg);border-left:4px solid var(--red);
+  margin:16px 0 4px;padding:12px 14px 14px;border-radius:0 8px 8px 0;
+}
+.flags h2{color:var(--red);border:0;margin:0 0 4px;padding:0}
+.flags ul{margin:0}
+.flags>ul>li{margin-top:7px}
+.flags>ul>li:first-child{margin-top:2px}
+
+/* ---------- sections ---------- */
+h2{font-size:16px;font-weight:650;letter-spacing:-.005em;margin:0;padding:13px 0 5px}
+.sec{border-top:1px solid var(--rule)}
+.sec>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:7px}
+.sec>summary::-webkit-details-marker{display:none}
+.sec>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.chev{flex:0 0 auto;color:var(--ink-2);font-size:11px;transform:translateY(-2px);transition:transform .15s ease}
+.sec[open]>summary .chev{transform:translateY(-2px) rotate(90deg)}
+@media (prefers-reduced-motion:reduce){.chev{transition:none}}
+.sec>.body{padding-bottom:14px}
+
+/* ---------- lists / inline ---------- */
+ul,ol{margin:4px 0;padding-left:1.25em}
+li{margin:3px 0}
+li>ul,li>ol{margin:2px 0}
+li li{font-size:14.5px}
+strong{font-weight:650}
+.hl{background:var(--hl);border-radius:2px;padding:0 2px;box-decoration-break:clone}
+.note{color:var(--ink-2);font-size:14px;margin:2px 0 8px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em}
+a{color:var(--accent)}
+
+details.t{margin:4px 0}
+details.t>summary{
+  list-style:none;cursor:pointer;font-size:14.5px;color:var(--accent);
+  display:inline-flex;align-items:baseline;gap:6px;
+}
+details.t>summary::-webkit-details-marker{display:none}
+details.t>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+details.t>summary .chev{color:var(--accent)}
+details.t[open]>summary .chev{transform:translateY(-2px) rotate(90deg)}
+
+/* ---------- ddx tiers ---------- */
+.tier{border-left:3px solid var(--tier-other);padding-left:11px;margin:10px 0}
+.tier.fatal{border-color:var(--tier-fatal)}
+.tier.benign{border-color:var(--tier-benign)}
+.tier h3{font-size:14.5px;font-weight:650;margin:0 0 2px}
+.tier.fatal h3{color:var(--tier-fatal)}
+.tier ul{margin-top:2px}
+
+/* ---------- flowchart ---------- */
+figure{margin:10px 0 6px}
+svg.fc{width:100%;height:auto;max-width:400px;display:block}
+svg.fc .box{fill:var(--fc-box);stroke:var(--fc-line);stroke-width:1.2}
+svg.fc .dec{fill:var(--fc-dec);stroke:var(--fc-dec-line);stroke-width:1.2}
+svg.fc text{fill:var(--ink);font-family:inherit;font-size:12px}
+svg.fc .sm{font-size:10.5px}
+svg.fc .edge{stroke:var(--fc-edge);stroke-width:1.3;fill:none}
+svg.fc .head{fill:var(--fc-edge);stroke:none}
+svg.fc .lbl{fill:var(--ink-2);font-size:10.5px}
+svg.fc .yes{fill:var(--fc-yes);font-size:10.5px;font-weight:600}
+
+.placeholder{
+  border:1px dashed var(--rule);border-radius:8px;padding:12px;
+  font-size:13.5px;color:var(--ink-2);margin:10px 0;
+}
+
+/* ---------- related + footer ---------- */
+.rel{border-top:1px solid var(--rule);padding-top:12px;margin-top:8px}
+.rel h2{padding-top:0}
+.rel-label{font-size:12.5px;color:var(--ink-2);margin:8px 0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips a{
+  font-size:14px;color:var(--ink);text-decoration:none;border:1px solid var(--rule);
+  border-radius:7px;padding:5px 10px;background:var(--bg-soft);
+}
+.chips a:hover{border-color:var(--accent);color:var(--accent)}
+.chips a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+footer{border-top:1px solid var(--rule);margin-top:18px;padding-top:12px;font-size:13px;color:var(--ink-2)}
+
+/* ---------- home ---------- */
+.grp{margin-top:18px}
+.grp-h{font-size:12.5px;color:var(--ink-2);margin:0 0 6px;letter-spacing:.02em}
+.rows{border-top:1px solid var(--rule)}
+.row{
+  display:flex;align-items:baseline;gap:10px;padding:11px 2px;
+  border-bottom:1px solid var(--rule);text-decoration:none;color:var(--ink);
+}
+.row:hover{background:var(--bg-soft)}
+.row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.row .ic{flex:0 0 auto;font-size:17px;line-height:1}
+.row .tt{flex:1 1 auto;font-size:15.5px}
+.row .cc{flex:0 0 auto;font-size:12px;color:var(--ink-2)}
+.stub{opacity:.55}
+
+/* ---------- search results ---------- */
+.res-grp{margin-top:16px}
+.res-h{
+  display:flex;align-items:baseline;gap:8px;font-size:13px;color:var(--ink-2);
+  padding-bottom:4px;border-bottom:1px solid var(--rule);
+}
+.res-h b{font-size:14.5px;font-weight:650;color:var(--ink)}
+.res-h .here{color:var(--accent);font-size:11.5px}
+.hit{
+  display:block;width:100%;text-align:left;font:inherit;background:none;cursor:pointer;
+  border:0;border-bottom:1px solid var(--rule);padding:9px 2px;color:var(--ink);
+}
+.hit:hover{background:var(--bg-soft)}
+.hit:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.hit .sec-tag{display:block;font-size:11.5px;color:var(--ink-2);margin-bottom:1px}
+.hit .sec-tag.flag{color:var(--red);font-weight:600}
+.hit .txt{font-size:14.5px;line-height:1.45}
+.count{font-size:12px;color:var(--ink-2);margin:10px 2px 0}
+.empty{padding:28px 4px;color:var(--ink-2);font-size:14.5px}
+mark{background:var(--hl);color:inherit;border-radius:2px;padding:0 1px}
+.flash{animation:flash 1.6s ease-out;border-radius:3px}
+.sec.flash,.flags.flash{animation:none;background:transparent}
+.sec.flash>summary,.flags.flash>h2{animation:flash 1.6s ease-out;border-radius:3px}
+@keyframes flash{0%,25%{background:var(--hl)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){.flash{animation:none;background:var(--hl)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-in">
+    <div class="topline">
+      <button id="back" type="button" hidden>‹ 全部</button>
+      <div class="crumb" id="crumb">急診醫學筆記</div>
+    </div>
+    <h1 id="title">急診醫學筆記</h1>
+    <div class="searchbar">
+      <input id="q" type="search" placeholder="搜尋全部頁面（HINTS、ectopic、Epley…）"
+             autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+      <button id="clr" type="button" aria-label="清除搜尋" hidden>×</button>
+    </div>
+    <nav class="jump" id="jump" aria-label="跳至段落" hidden></nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="home"></div>
+  <div id="results" hidden></div>
+  <div id="pages"><article class="page" data-slug="dizziness" hidden><div class="flags" id="dizziness-1" data-nav="Red Flags"><h2>🚩 Red Flags</h2><ul><li id="dizziness-7"><strong>神經學症狀</strong>：<span class="hl"><strong>5D's</strong> → 想後循環中風</span><ul><li id="dizziness-2">Diplopia</li><li id="dizziness-3">Dysarthria</li><li id="dizziness-4">Dysphagia</li><li id="dizziness-5">Dysmetria</li><li id="dizziness-6">Drop attack</li></ul></li><li id="dizziness-8"><strong>突發性頭暈＋頭痛／頸痛</strong>：想 vertebral artery dissection、SAH</li><li id="dizziness-12"><strong>HINTS 指向 central</strong>（任一項即算）<ul><li id="dizziness-9">Head impulse test 正常</li><li id="dizziness-10">Direction-changing nystagmus</li><li id="dizziness-11">Skew deviation</li></ul></li><li id="dizziness-13"><strong>無法站立行走</strong>（truncal ataxia）：即使其他檢查正常也要想 central cause</li><li id="dizziness-14"><strong>心血管警訊</strong>：胸痛、心悸、運動中發作 → arrhythmia、ACS 非典型表現</li><li id="dizziness-15"><strong>姿勢性頭暈＋黑便／腹痛</strong>：GI bleeding、內出血造成的 presyncope</li><li id="dizziness-16"><strong>高齡＋多重血管風險因子</strong>：即使症狀像 peripheral，中風機率仍高</li></ul></div><details class="sec" open id="dizziness-17" data-nav="History"><summary><span class="chev">▶</span><h2>History</h2></summary><div class="body"><p class="note" id="dizziness-18">採 <span class="hl"><strong>Timing &amp; Triggers 導向（TiTrATE）</strong></span>，不糾結病人描述的「暈的性質」</p><details class="t" open><summary id="dizziness-19"><span class="chev">▶</span>分流圖：Timing &amp; Triggers</summary><figure><svg class="fc" viewBox="0 0 344 264" role="img"
+     aria-label="頭暈分流圖：先分持續型或陣發型，持續型走 acute vestibular syndrome 與 HINTS；陣發型再看有無誘發動作，有則為 t-EVS，無則為 s-EVS。">
+  <rect class="box" x="6" y="6" width="144" height="42" rx="6"/>
+  <text x="78" y="24" text-anchor="middle">頭暈病人</text>
+  <text x="78" y="39" text-anchor="middle" class="sm">Red Flags 已排除</text>
+
+  <path class="edge" d="M78 48 V60"/>
+  <polygon class="head" points="74,60 82,60 78,66"/>
+
+  <rect class="dec" x="6" y="66" width="144" height="42" rx="6"/>
+  <text x="78" y="84" text-anchor="middle">持續型還是</text>
+  <text x="78" y="99" text-anchor="middle">陣發型？</text>
+
+  <path class="edge" d="M150 87 H184"/>
+  <polygon class="head" points="184,83 184,91 190,87"/>
+  <text x="167" y="80" text-anchor="middle" class="lbl">持續</text>
+
+  <rect class="box" x="190" y="60" width="148" height="54" rx="6"/>
+  <text x="264" y="78" text-anchor="middle" class="sm">Acute vestibular</text>
+  <text x="264" y="92" text-anchor="middle" class="sm">syndrome</text>
+  <text x="264" y="106" text-anchor="middle" class="sm">→ 見 HINTS 判讀</text>
+
+  <path class="edge" d="M78 108 V124"/>
+  <polygon class="head" points="74,124 82,124 78,130"/>
+  <text x="84" y="121" class="lbl">陣發</text>
+
+  <rect class="dec" x="6" y="130" width="144" height="48" rx="6"/>
+  <text x="78" y="148" text-anchor="middle">有誘發動作？</text>
+  <text x="78" y="164" text-anchor="middle" class="sm">轉頭、翻身、起身</text>
+
+  <path class="edge" d="M150 152 H184"/>
+  <polygon class="head" points="184,148 184,156 190,152"/>
+  <text x="167" y="145" text-anchor="middle" class="yes">Yes</text>
+
+  <rect class="box" x="190" y="126" width="148" height="56" rx="6"/>
+  <text x="264" y="145" text-anchor="middle">t-EVS</text>
+  <text x="264" y="160" text-anchor="middle" class="sm">BPPV、orthostatic</text>
+  <text x="264" y="174" text-anchor="middle" class="sm">→ 見 Dix-Hallpike</text>
+
+  <path class="edge" d="M78 178 V194"/>
+  <polygon class="head" points="74,194 82,194 78,200"/>
+  <text x="84" y="191" class="lbl">No</text>
+
+  <rect class="box" x="6" y="200" width="212" height="56" rx="6"/>
+  <text x="112" y="219" text-anchor="middle">s-EVS</text>
+  <text x="112" y="234" text-anchor="middle" class="sm">vestibular migraine、TIA</text>
+  <text x="112" y="248" text-anchor="middle" class="sm">依血管風險因子評估</text>
+</svg></figure></details><ol><li id="dizziness-23"><strong>持續型還是陣發型？</strong>（acute vestibular syndrome vs. episodic）<details class="t"><summary id="dizziness-22"><span class="chev">▶</span>陣發的話，有沒有誘發因素？</summary><ul><li id="dizziness-20">轉頭／翻身／起身（t-EVS）→ 想 BPPV、orthostatic</li><li id="dizziness-21">自發（s-EVS）→ 想 vestibular migraine、TIA</li></ul></details></li><li id="dizziness-27"><strong>發作持續多久？</strong><ul><li id="dizziness-24">秒 → BPPV</li><li id="dizziness-25">分鐘～小時 → TIA、vestibular migraine</li><li id="dizziness-26">天 → vestibular neuritis、stroke</li></ul></li><li id="dizziness-31"><strong>伴隨症狀</strong><ul><li id="dizziness-28">頭痛、頸痛</li><li id="dizziness-29">聽力變化、耳鳴</li><li id="dizziness-30">複視、構音困難、肢體無力麻木</li></ul></li><li id="dizziness-35"><strong>用藥史</strong><ul><li id="dizziness-32">降壓藥、降血糖藥、抗癲癇藥</li><li id="dizziness-33">耳毒性藥物</li><li id="dizziness-34">最近新加的藥</li></ul></li><li id="dizziness-36"><strong>血管風險因子</strong>：年齡、高血壓、糖尿病、心房顫動、抽菸、過去中風史</li><li id="dizziness-41"><strong>其他線索</strong><ul><li id="dizziness-37">最近感染 → neuritis</li><li id="dizziness-38">外傷、頸部推拿 → dissection</li><li id="dizziness-39">月經、懷孕可能</li><li id="dizziness-40">黑便</li></ul></li></ol></div></details><details class="sec" open id="dizziness-42" data-nav="Physical Exam"><summary><span class="chev">▶</span><h2>Physical Examination</h2></summary><div class="body"><ul><li id="dizziness-45"><strong>Vital signs</strong><ul><li id="dizziness-43">姿勢性血壓（躺→站，1 分鐘、3 分鐘）</li><li id="dizziness-44">心律不整（不規則脈 → 想 Af）</li></ul></li><li id="dizziness-50"><strong>HINTS exam</strong>（限 acute vestibular syndrome：持續性頭暈＋nystagmus 才做）<ul><li id="dizziness-46"><strong>H</strong>ead <strong>I</strong>mpulse test → peripheral 會有 corrective saccade；正常反而是 central 警訊</li><li id="dizziness-47"><strong>N</strong>ystagmus → 單向水平＝peripheral；direction-changing、垂直、旋轉＝central</li><li id="dizziness-48"><strong>T</strong>est of <strong>S</strong>kew（alternate cover test）→ 有 skew deviation＝central</li><li id="dizziness-49">可加做床邊聽力測試（HINTS plus）：新發生單側聽損 → 想 AICA stroke</li></ul></li><li id="dizziness-53"><strong>Dix-Hallpike test</strong>（限陣發性、姿勢誘發者）<ul><li id="dizziness-51">陽性 → posterior canal BPPV</li><li id="dizziness-52">注意頸椎疾患、dissection 疑慮時避免</li></ul></li><li id="dizziness-56"><strong>Cerebellar signs</strong><ul><li id="dizziness-54">Finger-to-nose、rapid alternating movements</li><li id="dizziness-55"><strong>步態測試</strong>：能不能自己站、走直線——不能走＝central until proven otherwise</li></ul></li><li id="dizziness-60"><strong>一般檢查</strong><ul><li id="dizziness-57">耳鏡（herpes zoster oticus、中耳炎）</li><li id="dizziness-58">心臟聽診（murmur、心律）</li><li id="dizziness-59">神經學檢查（顱神經、肢體肌力感覺）</li></ul></li></ul></div></details><details class="sec" open id="dizziness-61" data-nav="Differential"><summary><span class="chev">▶</span><h2>Differential Diagnosis</h2></summary><div class="body"><p class="note" id="dizziness-62">依危險度排序</p><div class="tier fatal"><h3 id="dizziness-73">致命性（不能漏）</h3><ul><li id="dizziness-63">Posterior circulation stroke／TIA</li><li id="dizziness-64">Vertebral artery dissection</li><li id="dizziness-65">Cerebellar hemorrhage</li><li id="dizziness-66">Arrhythmia（Af with RVR、VT、severe bradycardia）</li><li id="dizziness-67">ACS（非典型表現）</li><li id="dizziness-71">Hypovolemia／內出血<ul><li id="dizziness-68">GI bleeding</li><li id="dizziness-69"><strong>Ruptured ectopic pregnancy</strong>（育齡女性）</li><li id="dizziness-70">AAA rupture（高齡）</li></ul></li><li id="dizziness-72">Hypoglycemia</li></ul></div><div class="tier benign"><h3 id="dizziness-78">常見良性</h3><ul><li id="dizziness-74">BPPV</li><li id="dizziness-75">Vestibular neuritis／labyrinthitis</li><li id="dizziness-76">Orthostatic hypotension（藥物、脫水）</li><li id="dizziness-77">Vestibular migraine</li></ul></div><div class="tier"><h3 id="dizziness-84">其他要想到的</h3><ul><li id="dizziness-79">Ménière's disease</li><li id="dizziness-80">藥物副作用</li><li id="dizziness-81">Anemia</li><li id="dizziness-82">焦慮、過度換氣</li><li id="dizziness-83">CO 中毒（同住者同時有症狀時）</li></ul><p class="placeholder">圖片位置：原本 Notion 上那張圖用的是會過期的 S3 連結。把圖檔放進 <code>assets/img/</code>，再用 <code>@img: 檔名</code> 插入。</p></div></div></details><details class="sec" id="dizziness-85" data-nav="Investigations"><summary><span class="chev">▶</span><h2>Investigations</h2></summary><div class="body"><p class="note" id="dizziness-86">原則：<strong>依臨床判斷選擇性開立</strong>，不是全套都開。</p><ul><li id="dizziness-89"><strong>床邊立即做</strong><ul><li id="dizziness-87"><strong>Fingerstick glucose（所有頭暈病人）</strong></li><li id="dizziness-88">ECG → 心律不整、ischemia</li></ul></li><li id="dizziness-98"><strong>Labs</strong>（有相應懷疑才開）<ul><li id="dizziness-90">CBC → 懷疑 anemia、GI bleeding</li><li id="dizziness-94"><strong>Electrolytes</strong><ul><li id="dizziness-91">Na → hyponatremia（老年、thiazide、SSRI 使用者）</li><li id="dizziness-92">K → hypo/hyperkalemia（誘發心律不整，對照 ECG）</li><li id="dizziness-93">Ca → hypercalcemia（意識變化、惡性腫瘤病人）</li></ul></li><li id="dizziness-95">BUN/Cr → prerenal pattern 支持脫水</li><li id="dizziness-96">Troponin → 懷疑 ACS</li><li id="dizziness-97"><strong>Pregnancy test（urine/serum β-hCG）</strong> → 育齡女性，排除 ectopic</li></ul></li><li id="dizziness-103"><strong>影像</strong><ul><li id="dizziness-99"><strong>Non-contrast brain CT</strong> → 主要價值是排除出血；後顱窩早期梗塞敏感度極低（&lt;40%），CT 正常 ≠ 排除 stroke</li><li id="dizziness-100"><strong>Brain MRI with DWI</strong> → 懷疑 central 的首選；發作 48 小時內仍有約 10–20% 偽陰性</li><li id="dizziness-101"><strong>CTA／MRA of head and neck</strong>（含 vertebrobasilar system）→ 懷疑 dissection、vertebrobasilar insufficiency</li><li id="dizziness-102"><strong>Abdominal／pelvic imaging</strong>（依情境：POCUS 或 CT abdomen/pelvis）→ 懷疑 ectopic、AAA、內出血</li></ul></li><li id="dizziness-106"><strong>POCUS</strong>（依情境）<ul><li id="dizziness-104">IVC、cardiac → hypovolemia、心因性</li><li id="dizziness-105">FAST＋pelvic view → 懷疑內出血、ectopic</li></ul></li></ul></div></details><details class="sec" id="dizziness-107" data-nav="Disposition"><summary><span class="chev">▶</span><h2>Disposition</h2></summary><div class="body"><ul><li id="dizziness-110"><strong>收住院／啟動 stroke pathway</strong><ul><li id="dizziness-108">HINTS 指向 central、無法行走、任何 red flag</li><li id="dizziness-109">新發現的心律不整、不穩定 vital signs</li></ul></li><li id="dizziness-113"><strong>留觀</strong><ul><li id="dizziness-111">症狀未緩解但檢查未明確指向 central，觀察變化、必要時安排 MRI</li><li id="dizziness-112">Orthostatic 補水治療後再評估</li></ul></li><li id="dizziness-117"><strong>可回家</strong><ul><li id="dizziness-114">明確 BPPV → 床邊 Epley maneuver，成功後即可回家</li><li id="dizziness-115">明確 peripheral（如 vestibular neuritis）且能行走、能進食</li><li id="dizziness-116">症狀已完全緩解且無 red flag</li></ul></li><li id="dizziness-121"><strong>回家條件</strong><ul><li id="dizziness-118">能自行行走</li><li id="dizziness-119">能口服進食（藥物、水分）</li><li id="dizziness-120">有照顧者、知道何時回診</li></ul></li><li id="dizziness-124"><strong>轉介</strong><ul><li id="dizziness-122">反覆發作、診斷不明 → 神經科或耳鼻喉科門診</li><li id="dizziness-123">疑 vestibular migraine → 神經科</li></ul></li></ul></div></details><details class="sec" id="dizziness-125" data-nav="Medications"><summary><span class="chev">▶</span><h2>💊 Medications</h2></summary><div class="body"><ul><li id="dizziness-129"><strong>止暈</strong>（限 peripheral、症狀嚴重時短期用，≤3 天，會延緩前庭代償）<ul><li id="dizziness-126">Meclizine 25 mg PO q6h PRN</li><li id="dizziness-127">Dimenhydrinate 50 mg PO/IV q4–6h PRN</li><li id="dizziness-128">Diazepam 2–5 mg PO/IV q8h PRN（嚴重急性期）</li></ul></li><li id="dizziness-133"><strong>止吐</strong><ul><li id="dizziness-130">Metoclopramide 10 mg IV/PO q6h PRN</li><li id="dizziness-131">Novamin</li><li id="dizziness-132">Ondansetron 4 mg IV q8h PRN</li></ul></li><li id="dizziness-135"><strong>Vestibular neuritis</strong><ul><li id="dizziness-134">考慮短期 steroid（如 Prednisolone 1 mg/kg/day tapering，證據等級中等）</li></ul></li><li id="dizziness-137"><strong>BPPV</strong><ul><li id="dizziness-136">首選 Epley maneuver，<strong>不建議</strong>長期止暈藥</li></ul></li></ul></div></details><details class="sec" id="dizziness-138" data-nav="衛教"><summary><span class="chev">▶</span><h2>📋 衛教重點</h2></summary><div class="body"><ul><li id="dizziness-141"><strong>BPPV</strong><ul><li id="dizziness-139">復位後 48 小時內避免快速轉頭、避免患側臥</li><li id="dizziness-140">可能復發，教導自行做 Epley（或提供衛教單）</li></ul></li><li id="dizziness-144"><strong>回診警訊（所有頭暈病人）</strong><ul><li id="dizziness-142">新出現：複視、口齒不清、肢體無力麻木、無法行走、劇烈頭痛</li><li id="dizziness-143">症狀惡化或超過預期時間未改善</li></ul></li><li id="dizziness-147"><strong>Orthostatic</strong><ul><li id="dizziness-145">起身放慢（躺→坐→站各停 30 秒）、足量喝水</li><li id="dizziness-146">回診調整可疑藥物，不要自行停藥</li></ul></li><li id="dizziness-148"><strong>前庭復健</strong>：vestibular neuritis 恢復期鼓勵早期活動，不要一直臥床</li></ul></div></details><div class="rel"><h2>相關頁面</h2><p class="rel-label">相關疾病</p><div class="chips"><a href="#/bppv">🌀 BPPV</a><a href="#/pc-stroke">🧠 Posterior circulation stroke</a><a href="#/vestibular-neuritis">👂 Vestibular neuritis</a></div><p class="rel-label">相關技巧</p><div class="chips"><a href="#/pocus-cardiac">🫀 POCUS - Cardiac</a></div></div><footer>參考資料：GRACE-3（SAEM 2023）· Acad Emerg Med · <a href="https://onlinelibrary.wiley.com/doi/epdf/10.1111/acem.14728" target="_blank" rel="noopener">原文</a></footer></article>
+<article class="page" data-slug="pocus-cardiac" hidden><details class="sec" open id="pocus-cardiac-1" data-nav="Views"><summary><span class="chev">▶</span><h2>Views</h2></summary><div class="body"><ul><li id="pocus-cardiac-3"><strong>Parasternal Long Axis（PSLA）</strong><ul><li id="pocus-cardiac-2">待填</li></ul></li></ul><p class="placeholder">影像／GIF 之後放進 <code>assets/img/</code>，用 <code>@img: 檔名</code> 插入。</p></div></details><div class="rel"><h2>相關頁面</h2><p class="rel-label">相關主訴</p><div class="chips"><a href="#/dizziness">💫 頭暈 Dizziness / Vertigo</a></div></div></article>
+<article class="page" data-slug="bppv" hidden><div class="flags" id="bppv-1" data-nav="Red Flags"><h2>🚩 Red Flags</h2><p class="placeholder">待填。這一頁還是空的 stub，先保留骨架讓關聯與搜尋可以運作。</p></div><details class="sec" open id="bppv-2" data-nav="Key Points"><summary><span class="chev">▶</span><h2>Key Points</h2></summary><div class="body"><p class="placeholder">待填</p></div></details><div class="rel"><h2>相關頁面</h2><p class="rel-label">相關主訴</p><div class="chips"><a href="#/dizziness">💫 頭暈 Dizziness / Vertigo</a></div></div></article>
+<article class="page" data-slug="vestibular-neuritis" hidden><div class="flags" id="vestibular-neuritis-1" data-nav="Red Flags"><h2>🚩 Red Flags</h2><p class="placeholder">待填。這一頁還是空的 stub，先保留骨架讓關聯與搜尋可以運作。</p></div><details class="sec" open id="vestibular-neuritis-2" data-nav="Key Points"><summary><span class="chev">▶</span><h2>Key Points</h2></summary><div class="body"><p class="placeholder">待填</p></div></details><div class="rel"><h2>相關頁面</h2><p class="rel-label">相關主訴</p><div class="chips"><a href="#/dizziness">💫 頭暈 Dizziness / Vertigo</a></div></div></article>
+<article class="page" data-slug="pc-stroke" hidden><div class="flags" id="pc-stroke-1" data-nav="Red Flags"><h2>🚩 Red Flags</h2><p class="placeholder">待填。這一頁還是空的 stub，先保留骨架讓關聯與搜尋可以運作。</p></div><details class="sec" open id="pc-stroke-2" data-nav="Key Points"><summary><span class="chev">▶</span><h2>Key Points</h2></summary><div class="body"><p class="placeholder">待填</p></div></details><div class="rel"><h2>相關頁面</h2><p class="rel-label">相關主訴</p><div class="chips"><a href="#/dizziness">💫 頭暈 Dizziness / Vertigo</a></div></div></article></div>
+</div>
+
+<script>window.__DATA__={"pages":[{"slug":"dizziness","title":"頭暈 Dizziness / Vertigo","icon":"💫","type":"主訴","category":"神經","aliases":["眩暈","vertigo","dizzy","天旋地轉","暈眩"],"related":["bppv","pc-stroke","vestibular-neuritis","pocus-cardiac"],"stub":false},{"slug":"pocus-cardiac","title":"POCUS - Cardiac","icon":"🫀","type":"技巧","category":"POCUS","aliases":["心臟超音波","echo","PSLA","parasternal long axis"],"related":["dizziness"],"stub":true},{"slug":"bppv","title":"BPPV","icon":"🌀","type":"疾病","category":"神經","aliases":["benign paroxysmal positional vertigo","良性陣發性姿勢性眩暈","耳石"],"related":["dizziness"],"stub":true},{"slug":"vestibular-neuritis","title":"Vestibular neuritis","icon":"👂","type":"疾病","category":"神經","aliases":["前庭神經炎","labyrinthitis","迷路炎"],"related":["dizziness"],"stub":true},{"slug":"pc-stroke","title":"Posterior circulation stroke","icon":"🧠","type":"疾病","category":"神經","aliases":["後循環中風","vertebrobasilar","PICA","AICA"],"related":["dizziness"],"stub":true}],"index":[{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-1","t":"🚩 Red Flags"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-2","t":"Diplopia"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-3","t":"Dysarthria"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-4","t":"Dysphagia"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-5","t":"Dysmetria"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-6","t":"Drop attack"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-7","t":"神經學症狀：5D's → 想後循環中風"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-8","t":"突發性頭暈＋頭痛／頸痛：想 vertebral artery dissection、SAH"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-9","t":"Head impulse test 正常"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-10","t":"Direction-changing nystagmus"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-11","t":"Skew deviation"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-12","t":"HINTS 指向 central（任一項即算）"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-13","t":"無法站立行走（truncal ataxia）：即使其他檢查正常也要想 central cause"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-14","t":"心血管警訊：胸痛、心悸、運動中發作 → arrhythmia、ACS 非典型表現"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-15","t":"姿勢性頭暈＋黑便／腹痛：GI bleeding、內出血造成的 presyncope"},{"p":"dizziness","s":"Red Flags","f":1,"id":"dizziness-16","t":"高齡＋多重血管風險因子：即使症狀像 peripheral，中風機率仍高"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-17","t":"History"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-18","t":"採 Timing & Triggers 導向（TiTrATE），不糾結病人描述的「暈的性質」"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-19","t":"分流圖：Timing & Triggers"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-20","t":"轉頭／翻身／起身（t-EVS）→ 想 BPPV、orthostatic"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-21","t":"自發（s-EVS）→ 想 vestibular migraine、TIA"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-22","t":"陣發的話，有沒有誘發因素？"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-23","t":"持續型還是陣發型？（acute vestibular syndrome vs. episodic）"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-24","t":"秒 → BPPV"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-25","t":"分鐘～小時 → TIA、vestibular migraine"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-26","t":"天 → vestibular neuritis、stroke"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-27","t":"發作持續多久？"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-28","t":"頭痛、頸痛"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-29","t":"聽力變化、耳鳴"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-30","t":"複視、構音困難、肢體無力麻木"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-31","t":"伴隨症狀"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-32","t":"降壓藥、降血糖藥、抗癲癇藥"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-33","t":"耳毒性藥物"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-34","t":"最近新加的藥"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-35","t":"用藥史"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-36","t":"血管風險因子：年齡、高血壓、糖尿病、心房顫動、抽菸、過去中風史"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-37","t":"最近感染 → neuritis"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-38","t":"外傷、頸部推拿 → dissection"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-39","t":"月經、懷孕可能"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-40","t":"黑便"},{"p":"dizziness","s":"History","f":0,"id":"dizziness-41","t":"其他線索"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-42","t":"Physical Examination"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-43","t":"姿勢性血壓（躺→站，1 分鐘、3 分鐘）"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-44","t":"心律不整（不規則脈 → 想 Af）"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-45","t":"Vital signs"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-46","t":"Head Impulse test → peripheral 會有 corrective saccade；正常反而是 central 警訊"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-47","t":"Nystagmus → 單向水平＝peripheral；direction-changing、垂直、旋轉＝central"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-48","t":"Test of Skew（alternate cover test）→ 有 skew deviation＝central"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-49","t":"可加做床邊聽力測試（HINTS plus）：新發生單側聽損 → 想 AICA stroke"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-50","t":"HINTS exam（限 acute vestibular syndrome：持續性頭暈＋nystagmus 才做）"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-51","t":"陽性 → posterior canal BPPV"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-52","t":"注意頸椎疾患、dissection 疑慮時避免"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-53","t":"Dix-Hallpike test（限陣發性、姿勢誘發者）"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-54","t":"Finger-to-nose、rapid alternating movements"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-55","t":"步態測試：能不能自己站、走直線——不能走＝central until proven otherwise"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-56","t":"Cerebellar signs"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-57","t":"耳鏡（herpes zoster oticus、中耳炎）"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-58","t":"心臟聽診（murmur、心律）"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-59","t":"神經學檢查（顱神經、肢體肌力感覺）"},{"p":"dizziness","s":"Physical Exam","f":0,"id":"dizziness-60","t":"一般檢查"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-61","t":"Differential Diagnosis"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-62","t":"依危險度排序"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-63","t":"Posterior circulation stroke／TIA"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-64","t":"Vertebral artery dissection"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-65","t":"Cerebellar hemorrhage"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-66","t":"Arrhythmia（Af with RVR、VT、severe bradycardia）"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-67","t":"ACS（非典型表現）"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-68","t":"GI bleeding"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-69","t":"Ruptured ectopic pregnancy（育齡女性）"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-70","t":"AAA rupture（高齡）"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-71","t":"Hypovolemia／內出血"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-72","t":"Hypoglycemia"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-73","t":"致命性（不能漏）"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-74","t":"BPPV"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-75","t":"Vestibular neuritis／labyrinthitis"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-76","t":"Orthostatic hypotension（藥物、脫水）"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-77","t":"Vestibular migraine"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-78","t":"常見良性"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-79","t":"Ménière's disease"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-80","t":"藥物副作用"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-81","t":"Anemia"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-82","t":"焦慮、過度換氣"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-83","t":"CO 中毒（同住者同時有症狀時）"},{"p":"dizziness","s":"Differential","f":0,"id":"dizziness-84","t":"其他要想到的"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-85","t":"Investigations"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-86","t":"原則：依臨床判斷選擇性開立，不是全套都開。"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-87","t":"Fingerstick glucose（所有頭暈病人）"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-88","t":"ECG → 心律不整、ischemia"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-89","t":"床邊立即做"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-90","t":"CBC → 懷疑 anemia、GI bleeding"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-91","t":"Na → hyponatremia（老年、thiazide、SSRI 使用者）"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-92","t":"K → hypo/hyperkalemia（誘發心律不整，對照 ECG）"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-93","t":"Ca → hypercalcemia（意識變化、惡性腫瘤病人）"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-94","t":"Electrolytes"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-95","t":"BUN/Cr → prerenal pattern 支持脫水"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-96","t":"Troponin → 懷疑 ACS"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-97","t":"Pregnancy test（urine/serum β-hCG） → 育齡女性，排除 ectopic"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-98","t":"Labs（有相應懷疑才開）"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-99","t":"Non-contrast brain CT → 主要價值是排除出血；後顱窩早期梗塞敏感度極低（\u003c40%），CT 正常 ≠ 排除 stroke"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-100","t":"Brain MRI with DWI → 懷疑 central 的首選；發作 48 小時內仍有約 10–20% 偽陰性"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-101","t":"CTA／MRA of head and neck（含 vertebrobasilar system）→ 懷疑 dissection、vertebrobasilar insufficiency"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-102","t":"Abdominal／pelvic imaging（依情境：POCUS 或 CT abdomen/pelvis）→ 懷疑 ectopic、AAA、內出血"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-103","t":"影像"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-104","t":"IVC、cardiac → hypovolemia、心因性"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-105","t":"FAST＋pelvic view → 懷疑內出血、ectopic"},{"p":"dizziness","s":"Investigations","f":0,"id":"dizziness-106","t":"POCUS（依情境）"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-107","t":"Disposition"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-108","t":"HINTS 指向 central、無法行走、任何 red flag"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-109","t":"新發現的心律不整、不穩定 vital signs"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-110","t":"收住院／啟動 stroke pathway"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-111","t":"症狀未緩解但檢查未明確指向 central，觀察變化、必要時安排 MRI"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-112","t":"Orthostatic 補水治療後再評估"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-113","t":"留觀"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-114","t":"明確 BPPV → 床邊 Epley maneuver，成功後即可回家"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-115","t":"明確 peripheral（如 vestibular neuritis）且能行走、能進食"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-116","t":"症狀已完全緩解且無 red flag"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-117","t":"可回家"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-118","t":"能自行行走"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-119","t":"能口服進食（藥物、水分）"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-120","t":"有照顧者、知道何時回診"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-121","t":"回家條件"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-122","t":"反覆發作、診斷不明 → 神經科或耳鼻喉科門診"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-123","t":"疑 vestibular migraine → 神經科"},{"p":"dizziness","s":"Disposition","f":0,"id":"dizziness-124","t":"轉介"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-125","t":"💊 Medications"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-126","t":"Meclizine 25 mg PO q6h PRN"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-127","t":"Dimenhydrinate 50 mg PO/IV q4–6h PRN"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-128","t":"Diazepam 2–5 mg PO/IV q8h PRN（嚴重急性期）"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-129","t":"止暈（限 peripheral、症狀嚴重時短期用，≤3 天，會延緩前庭代償）"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-130","t":"Metoclopramide 10 mg IV/PO q6h PRN"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-131","t":"Novamin"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-132","t":"Ondansetron 4 mg IV q8h PRN"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-133","t":"止吐"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-134","t":"考慮短期 steroid（如 Prednisolone 1 mg/kg/day tapering，證據等級中等）"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-135","t":"Vestibular neuritis"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-136","t":"首選 Epley maneuver，不建議長期止暈藥"},{"p":"dizziness","s":"Medications","f":0,"id":"dizziness-137","t":"BPPV"},{"p":"dizziness","s":"衛教","f":0,"id":"dizziness-138","t":"📋 衛教重點"},{"p":"dizziness","s":"衛教","f":0,"id":"dizziness-139","t":"復位後 48 小時內避免快速轉頭、避免患側臥"},{"p":"dizziness","s":"衛教","f":0,"id":"dizziness-140","t":"可能復發，教導自行做 Epley（或提供衛教單）"},{"p":"dizziness","s":"衛教","f":0,"id":"dizziness-141","t":"BPPV"},{"p":"dizziness","s":"衛教","f":0,"id":"dizziness-142","t":"新出現：複視、口齒不清、肢體無力麻木、無法行走、劇烈頭痛"},{"p":"dizziness","s":"衛教","f":0,"id":"dizziness-143","t":"症狀惡化或超過預期時間未改善"},{"p":"dizziness","s":"衛教","f":0,"id":"dizziness-144","t":"回診警訊（所有頭暈病人）"},{"p":"dizziness","s":"衛教","f":0,"id":"dizziness-145","t":"起身放慢（躺→坐→站各停 30 秒）、足量喝水"},{"p":"dizziness","s":"衛教","f":0,"id":"dizziness-146","t":"回診調整可疑藥物，不要自行停藥"},{"p":"dizziness","s":"衛教","f":0,"id":"dizziness-147","t":"Orthostatic"},{"p":"dizziness","s":"衛教","f":0,"id":"dizziness-148","t":"前庭復健：vestibular neuritis 恢復期鼓勵早期活動，不要一直臥床"},{"p":"pocus-cardiac","s":"Views","f":0,"id":"pocus-cardiac-1","t":"Views"},{"p":"pocus-cardiac","s":"Views","f":0,"id":"pocus-cardiac-2","t":"待填"},{"p":"pocus-cardiac","s":"Views","f":0,"id":"pocus-cardiac-3","t":"Parasternal Long Axis（PSLA）"},{"p":"bppv","s":"Red Flags","f":1,"id":"bppv-1","t":"🚩 Red Flags"},{"p":"bppv","s":"Key Points","f":0,"id":"bppv-2","t":"Key Points"},{"p":"vestibular-neuritis","s":"Red Flags","f":1,"id":"vestibular-neuritis-1","t":"🚩 Red Flags"},{"p":"vestibular-neuritis","s":"Key Points","f":0,"id":"vestibular-neuritis-2","t":"Key Points"},{"p":"pc-stroke","s":"Red Flags","f":1,"id":"pc-stroke-1","t":"🚩 Red Flags"},{"p":"pc-stroke","s":"Key Points","f":0,"id":"pc-stroke-2","t":"Key Points"}]};</script>
+<script>
+(function(){
+  var D = window.__DATA__ || {pages:[],index:[]};
+  var byslug = {};
+  D.pages.forEach(function(p){ byslug[p.slug] = p; });
+
+  var el = {
+    home: document.getElementById('home'),
+    results: document.getElementById('results'),
+    pages: document.getElementById('pages'),
+    q: document.getElementById('q'),
+    clr: document.getElementById('clr'),
+    jump: document.getElementById('jump'),
+    back: document.getElementById('back'),
+    crumb: document.getElementById('crumb'),
+    title: document.getElementById('title'),
+    hdr: document.querySelector('header')
+  };
+  var arts = {};
+  Array.prototype.slice.call(el.pages.children).forEach(function(a){ arts[a.dataset.slug] = a; });
+
+  /* ---------- home ---------- */
+  var TYPES = ['主訴','疾病','技巧'];
+  function buildHome(){
+    var h = '';
+    TYPES.forEach(function(t){
+      var list = D.pages.filter(function(p){ return p.type === t; });
+      if (!list.length) return;
+      list.sort(function(a,b){ return a.title.localeCompare(b.title,'zh-Hant'); });
+      h += '<div class="grp"><p class="grp-h">' + t + ' · ' + list.length + '</p><div class="rows">';
+      list.forEach(function(p){
+        h += '<a class="row' + (p.stub ? ' stub' : '') + '" href="#/' + p.slug + '">'
+           + '<span class="ic">' + (p.icon || '·') + '</span>'
+           + '<span class="tt">' + esc(p.title) + '</span>'
+           + '<span class="cc">' + esc(p.category || '') + (p.stub ? ' · 待填' : '') + '</span></a>';
+      });
+      h += '</div></div>';
+    });
+    el.home.innerHTML = h;
+  }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ---------- routing ---------- */
+  var current = null;
+  function show(slug){
+    Object.keys(arts).forEach(function(s){ arts[s].hidden = (s !== slug); });
+    current = slug || null;
+    var searching = !!el.q.value.trim();
+    el.results.hidden = !searching;
+    el.pages.hidden = searching || !slug;
+    el.home.hidden = searching || !!slug;
+    el.back.hidden = !slug;
+
+    if (slug && byslug[slug]) {
+      var p = byslug[slug];
+      el.crumb.textContent = '急診醫學筆記 / ' + p.type;
+      el.title.innerHTML = (p.icon ? p.icon + ' ' : '') + esc(p.title)
+        + (p.category ? '<span class="cat">' + esc(p.category) + '</span>' : '');
+      el.q.placeholder = '搜尋全部頁面（HINTS、ectopic、Epley…）';
+      buildJump(arts[slug]);
+    } else {
+      el.crumb.textContent = '急診醫學筆記';
+      el.title.textContent = '急診醫學筆記';
+      el.jump.hidden = true;
+    }
+  }
+  function buildJump(art){
+    var items = Array.prototype.slice.call(art.querySelectorAll('.flags, .sec'));
+    if (!items.length){ el.jump.hidden = true; return; }
+    el.jump.innerHTML = '';
+    items.forEach(function(s){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = s.dataset.nav || '段落';
+      b.addEventListener('click', function(){
+        if (s.tagName === 'DETAILS') s.open = true;
+        scrollTo_(s);
+      });
+      el.jump.appendChild(b);
+    });
+    el.jump.hidden = false;
+  }
+  function scrollTo_(node){
+    var y = node.getBoundingClientRect().top + window.pageYOffset - el.hdr.offsetHeight - 8;
+    window.scrollTo({top:y, behavior:'smooth'});
+  }
+  var pendingJump = null;
+  function route(){
+    var m = location.hash.match(/^#\/([^?]+)/);
+    show(m ? decodeURIComponent(m[1]) : null);
+    if (pendingJump){ var id = pendingJump; pendingJump = null; jump_(id); }
+    else if (!el.q.value.trim()) window.scrollTo({top:0});
+  }
+  window.addEventListener('hashchange', route);
+  el.back.addEventListener('click', function(){ location.hash = ''; });
+
+  /* ---------- search ---------- */
+  function search(term){
+    var t = term.toLowerCase();
+    var groups = {}, order = [], count = 0;
+
+    // page title / alias matches float to the top of their own group
+    D.pages.forEach(function(p){
+      var hay = (p.title + ' ' + (p.aliases || []).join(' ')).toLowerCase();
+      if (hay.indexOf(t) === -1) return;
+      if (!groups[p.slug]) { groups[p.slug] = []; order.push(p.slug); }
+      groups[p.slug].unshift({title:true});
+    });
+
+    D.index.forEach(function(r){
+      if (r.t.toLowerCase().indexOf(t) === -1) return;
+      if (!groups[r.p]) { groups[r.p] = []; order.push(r.p); }
+      groups[r.p].push(r);
+      count++;
+    });
+
+    // current page first, then 主訴 > 疾病 > 技巧
+    order.sort(function(a,b){
+      if (a === current) return -1;
+      if (b === current) return 1;
+      var ta = TYPES.indexOf(byslug[a].type), tb = TYPES.indexOf(byslug[b].type);
+      if (ta !== tb) return ta - tb;
+      return byslug[a].title.localeCompare(byslug[b].title,'zh-Hant');
+    });
+
+    if (!order.length){
+      el.results.innerHTML = '<div class="empty">沒有符合「' + esc(term) + '」的內容。<br>試試別的關鍵字，或到頁面裡加 alias。</div>';
+      return;
+    }
+
+    var h = '<p class="count">' + count + ' 筆符合，分布在 ' + order.length + ' 頁</p>';
+    order.forEach(function(slug){
+      var p = byslug[slug];
+      h += '<div class="res-grp"><div class="res-h">'
+         + '<span>' + (p.icon || '') + '</span><b>' + esc(p.title) + '</b>'
+         + '<span>' + p.type + '</span>'
+         + (slug === current ? '<span class="here">這一頁</span>' : '')
+         + '</div>';
+      groups[slug].forEach(function(r){
+        if (r.title){
+          h += '<button class="hit" data-slug="' + slug + '"><span class="sec-tag">頁面標題符合</span>'
+             + '<span class="txt">開啟這一頁 →</span></button>';
+          return;
+        }
+        h += '<button class="hit" data-slug="' + slug + '" data-id="' + r.id + '">'
+           + '<span class="sec-tag' + (r.f ? ' flag' : '') + '">' + esc(r.s) + '</span>'
+           + '<span class="txt">' + mark(r.t, term) + '</span></button>';
+      });
+      h += '</div>';
+    });
+    el.results.innerHTML = h;
+
+    Array.prototype.slice.call(el.results.querySelectorAll('.hit')).forEach(function(b){
+      b.addEventListener('click', function(){ goTo(b.dataset.slug, b.dataset.id); });
+    });
+  }
+
+  function mark(text, term){
+    var i = text.toLowerCase().indexOf(term.toLowerCase());
+    if (i === -1) return esc(text);
+    return esc(text.slice(0,i)) + '<mark>' + esc(text.slice(i,i+term.length)) + '</mark>' + esc(text.slice(i+term.length));
+  }
+
+  function goTo(slug, id){
+    el.q.value = '';
+    el.clr.hidden = true;
+    el.results.hidden = true;
+    pendingJump = id || null;
+    if (location.hash !== '#/' + slug) location.hash = '#/' + slug;
+    else route();
+  }
+
+  function jump_(id){
+    var art = arts[current];
+    var node = art && art.querySelector('[id="' + id + '"]');
+    if (!node) { window.scrollTo({top:0}); return; }
+    // open every collapsed ancestor, outermost last so layout settles once
+    var chain = [], d = node.closest('details');
+    while (d) { chain.push(d); d = d.parentElement && d.parentElement.closest('details'); }
+    chain.reverse().forEach(function(x){ x.open = true; });
+    requestAnimationFrame(function(){
+      scrollTo_(node);
+      node.classList.remove('flash');
+      void node.offsetWidth;
+      node.classList.add('flash');
+    });
+  }
+
+  var timer;
+  el.q.addEventListener('input', function(){
+    clearTimeout(timer);
+    timer = setTimeout(function(){
+      var term = el.q.value.trim();
+      el.clr.hidden = !term;
+      if (!term){ el.results.hidden = true; show(current); window.scrollTo({top:0}); return; }
+      search(term);
+      el.results.hidden = false;
+      el.pages.hidden = true;
+      el.home.hidden = true;
+      window.scrollTo({top:0});
+    }, 60);
+  });
+  el.q.addEventListener('keydown', function(e){
+    if (e.key === 'Escape'){ el.q.value=''; el.clr.hidden=true; el.results.hidden=true; show(current); el.q.blur(); }
+  });
+  el.clr.addEventListener('click', function(){
+    el.q.value=''; el.clr.hidden=true; el.results.hidden=true; show(current); el.q.focus();
+  });
+
+  buildHome();
+  route();
+})();
+</script>
+</body>
+</html>

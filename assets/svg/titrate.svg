@@ -1,0 +1,48 @@
+<svg class="fc" viewBox="0 0 344 264" role="img"
+     aria-label="頭暈分流圖：先分持續型或陣發型，持續型走 acute vestibular syndrome 與 HINTS；陣發型再看有無誘發動作，有則為 t-EVS，無則為 s-EVS。">
+  <rect class="box" x="6" y="6" width="144" height="42" rx="6"/>
+  <text x="78" y="24" text-anchor="middle">頭暈病人</text>
+  <text x="78" y="39" text-anchor="middle" class="sm">Red Flags 已排除</text>
+
+  <path class="edge" d="M78 48 V60"/>
+  <polygon class="head" points="74,60 82,60 78,66"/>
+
+  <rect class="dec" x="6" y="66" width="144" height="42" rx="6"/>
+  <text x="78" y="84" text-anchor="middle">持續型還是</text>
+  <text x="78" y="99" text-anchor="middle">陣發型？</text>
+
+  <path class="edge" d="M150 87 H184"/>
+  <polygon class="head" points="184,83 184,91 190,87"/>
+  <text x="167" y="80" text-anchor="middle" class="lbl">持續</text>
+
+  <rect class="box" x="190" y="60" width="148" height="54" rx="6"/>
+  <text x="264" y="78" text-anchor="middle" class="sm">Acute vestibular</text>
+  <text x="264" y="92" text-anchor="middle" class="sm">syndrome</text>
+  <text x="264" y="106" text-anchor="middle" class="sm">→ 見 HINTS 判讀</text>
+
+  <path class="edge" d="M78 108 V124"/>
+  <polygon class="head" points="74,124 82,124 78,130"/>
+  <text x="84" y="121" class="lbl">陣發</text>
+
+  <rect class="dec" x="6" y="130" width="144" height="48" rx="6"/>
+  <text x="78" y="148" text-anchor="middle">有誘發動作？</text>
+  <text x="78" y="164" text-anchor="middle" class="sm">轉頭、翻身、起身</text>
+
+  <path class="edge" d="M150 152 H184"/>
+  <polygon class="head" points="184,148 184,156 190,152"/>
+  <text x="167" y="145" text-anchor="middle" class="yes">Yes</text>
+
+  <rect class="box" x="190" y="126" width="148" height="56" rx="6"/>
+  <text x="264" y="145" text-anchor="middle">t-EVS</text>
+  <text x="264" y="160" text-anchor="middle" class="sm">BPPV、orthostatic</text>
+  <text x="264" y="174" text-anchor="middle" class="sm">→ 見 Dix-Hallpike</text>
+
+  <path class="edge" d="M78 178 V194"/>
+  <polygon class="head" points="74,194 82,194 78,200"/>
+  <text x="84" y="191" class="lbl">No</text>
+
+  <rect class="box" x="6" y="200" width="212" height="56" rx="6"/>
+  <text x="112" y="219" text-anchor="middle">s-EVS</text>
+  <text x="112" y="234" text-anchor="middle" class="sm">vestibular migraine、TIA</text>
+  <text x="112" y="248" text-anchor="middle" class="sm">依血管風險因子評估</text>
+</svg>

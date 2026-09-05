@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101418" media="(prefers-color-scheme: dark)">
+<title>急診醫學筆記</title>
+<style>
+:root{
+  --bg:#ffffff; --bg-soft:#f3f6f7; --ink:#14181c; --ink-2:#5b656f;
+  --rule:#dee4e8; --red:#b3261e; --red-bg:#fdeceb; --hl:#ffeeb8;
+  --accent:#0f6e68; --tier-fatal:#b3261e; --tier-benign:#0f6e68; --tier-other:#9aa4ad;
+  --fc-box:#ffffff; --fc-line:#c3ccd3; --fc-dec:#fff5cc; --fc-dec-line:#d9a900;
+  --fc-edge:#8b959d; --fc-yes:#b3261e;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#101418; --bg-soft:#181e24; --ink:#e4e9ed; --ink-2:#97a2ac;
+    --rule:#262e36; --red:#ff8078; --red-bg:#231514; --hl:#4a3a0e;
+    --accent:#5fd0c4; --tier-fatal:#ff8078; --tier-benign:#5fd0c4; --tier-other:#6c7883;
+    --fc-box:#181e24; --fc-line:#39434d; --fc-dec:#3d3208; --fc-dec-line:#c9a227;
+    --fc-edge:#6c7883; --fc-yes:#ff8078;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  font-size:15.5px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 64px}
+[hidden]{display:none !important}
+
+/* ---------- header ---------- */
+header{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  padding:8px 16px; border-bottom:1px solid var(--rule);
+  padding-top:max(8px,env(safe-area-inset-top));
+}
+.hdr-in{max-width:720px;margin:0 auto}
+.topline{display:flex;align-items:baseline;gap:8px;min-height:20px}
+#back{
+  background:none;border:0;padding:0;font:inherit;font-size:12.5px;
+  color:var(--accent);cursor:pointer;flex:0 0 auto;
+}
+#back:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.crumb{font-size:11.5px;color:var(--ink-2);letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+h1{font-size:19px;font-weight:650;margin:1px 0 8px;letter-spacing:-.01em}
+h1 .cat{font-size:11.5px;font-weight:500;color:var(--accent);vertical-align:2px;margin-left:6px}
+.searchbar{position:relative}
+#q{
+  width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg-soft);
+  border:1px solid var(--rule);border-radius:9px;padding:9px 34px 9px 12px;appearance:none;
+}
+#q:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+#clr{
+  position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:0;
+  color:var(--ink-2);font:inherit;font-size:18px;padding:2px 8px;cursor:pointer;line-height:1;
+}
+#clr:focus-visible{outline:2px solid var(--accent);border-radius:6px}
+.jump{display:flex;gap:6px;overflow-x:auto;margin:8px -16px 0;padding:0 16px 2px;scrollbar-width:none}
+.jump::-webkit-scrollbar{display:none}
+.jump button{
+  flex:0 0 auto;font:inherit;font-size:12.5px;color:var(--ink-2);background:none;
+  border:1px solid var(--rule);border-radius:20px;padding:3px 10px;cursor:pointer;white-space:nowrap;
+}
+.jump button:hover{color:var(--ink)}
+.jump button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ---------- red flags ---------- */
+.flags{
+  background:var(--red-bg);border-left:4px solid var(--red);
+  margin:16px 0 4px;padding:12px 14px 14px;border-radius:0 8px 8px 0;
+}
+.flags h2{color:var(--red);border:0;margin:0 0 4px;padding:0}
+.flags ul{margin:0}
+.flags>ul>li{margin-top:7px}
+.flags>ul>li:first-child{margin-top:2px}
+
+/* ---------- sections ---------- */
+h2{font-size:16px;font-weight:650;letter-spacing:-.005em;margin:0;padding:13px 0 5px}
+.sec{border-top:1px solid var(--rule)}
+.sec>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:7px}
+.sec>summary::-webkit-details-marker{display:none}
+.sec>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.chev{flex:0 0 auto;color:var(--ink-2);font-size:11px;transform:translateY(-2px);transition:transform .15s ease}
+.sec[open]>summary .chev{transform:translateY(-2px) rotate(90deg)}
+@media (prefers-reduced-motion:reduce){.chev{transition:none}}
+.sec>.body{padding-bottom:14px}
+
+/* ---------- lists / inline ---------- */
+ul,ol{margin:4px 0;padding-left:1.25em}
+li{margin:3px 0}
+li>ul,li>ol{margin:2px 0}
+li li{font-size:14.5px}
+strong{font-weight:650}
+.hl{background:var(--hl);border-radius:2px;padding:0 2px;box-decoration-break:clone}
+.note{color:var(--ink-2);font-size:14px;margin:2px 0 8px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em}
+a{color:var(--accent)}
+
+details.t{margin:4px 0}
+details.t>summary{
+  list-style:none;cursor:pointer;font-size:14.5px;color:var(--accent);
+  display:inline-flex;align-items:baseline;gap:6px;
+}
+details.t>summary::-webkit-details-marker{display:none}
+details.t>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+details.t>summary .chev{color:var(--accent)}
+details.t[open]>summary .chev{transform:translateY(-2px) rotate(90deg)}
+
+/* ---------- ddx tiers ---------- */
+.tier{border-left:3px solid var(--tier-other);padding-left:11px;margin:10px 0}
+.tier.fatal{border-color:var(--tier-fatal)}
+.tier.benign{border-color:var(--tier-benign)}
+.tier h3{font-size:14.5px;font-weight:650;margin:0 0 2px}
+.tier.fatal h3{color:var(--tier-fatal)}
+.tier ul{margin-top:2px}
+
+/* ---------- flowchart ---------- */
+figure{margin:10px 0 6px}
+svg.fc{width:100%;height:auto;max-width:400px;display:block}
+svg.fc .box{fill:var(--fc-box);stroke:var(--fc-line);stroke-width:1.2}
+svg.fc .dec{fill:var(--fc-dec);stroke:var(--fc-dec-line);stroke-width:1.2}
+svg.fc text{fill:var(--ink);font-family:inherit;font-size:12px}
+svg.fc .sm{font-size:10.5px}
+svg.fc .edge{stroke:var(--fc-edge);stroke-width:1.3;fill:none}
+svg.fc .head{fill:var(--fc-edge);stroke:none}
+svg.fc .lbl{fill:var(--ink-2);font-size:10.5px}
+svg.fc .yes{fill:var(--fc-yes);font-size:10.5px;font-weight:600}
+
+.placeholder{
+  border:1px dashed var(--rule);border-radius:8px;padding:12px;
+  font-size:13.5px;color:var(--ink-2);margin:10px 0;
+}
+
+/* ---------- related + footer ---------- */
+.rel{border-top:1px solid var(--rule);padding-top:12px;margin-top:8px}
+.rel h2{padding-top:0}
+.rel-label{font-size:12.5px;color:var(--ink-2);margin:8px 0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips a{
+  font-size:14px;color:var(--ink);text-decoration:none;border:1px solid var(--rule);
+  border-radius:7px;padding:5px 10px;background:var(--bg-soft);
+}
+.chips a:hover{border-color:var(--accent);color:var(--accent)}
+.chips a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+footer{border-top:1px solid var(--rule);margin-top:18px;padding-top:12px;font-size:13px;color:var(--ink-2)}
+
+/* ---------- home ---------- */
+.grp{margin-top:18px}
+.grp-h{font-size:12.5px;color:var(--ink-2);margin:0 0 6px;letter-spacing:.02em}
+.rows{border-top:1px solid var(--rule)}
+.row{
+  display:flex;align-items:baseline;gap:10px;padding:11px 2px;
+  border-bottom:1px solid var(--rule);text-decoration:none;color:var(--ink);
+}
+.row:hover{background:var(--bg-soft)}
+.row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.row .ic{flex:0 0 auto;font-size:17px;line-height:1}
+.row .tt{flex:1 1 auto;font-size:15.5px}
+.row .cc{flex:0 0 auto;font-size:12px;color:var(--ink-2)}
+.stub{opacity:.55}
+
+/* ---------- search results ---------- */
+.res-grp{margin-top:16px}
+.res-h{
+  display:flex;align-items:baseline;gap:8px;font-size:13px;color:var(--ink-2);
+  padding-bottom:4px;border-bottom:1px solid var(--rule);
+}
+.res-h b{font-size:14.5px;font-weight:650;color:var(--ink)}
+.res-h .here{color:var(--accent);font-size:11.5px}
+.hit{
+  display:block;width:100%;text-align:left;font:inherit;background:none;cursor:pointer;
+  border:0;border-bottom:1px solid var(--rule);padding:9px 2px;color:var(--ink);
+}
+.hit:hover{background:var(--bg-soft)}
+.hit:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.hit .sec-tag{display:block;font-size:11.5px;color:var(--ink-2);margin-bottom:1px}
+.hit .sec-tag.flag{color:var(--red);font-weight:600}
+.hit .txt{font-size:14.5px;line-height:1.45}
+.count{font-size:12px;color:var(--ink-2);margin:10px 2px 0}
+.empty{padding:28px 4px;color:var(--ink-2);font-size:14.5px}
+mark{background:var(--hl);color:inherit;border-radius:2px;padding:0 1px}
+.flash{animation:flash 1.6s ease-out;border-radius:3px}
+.sec.flash,.flags.flash{animation:none;background:transparent}
+.sec.flash>summary,.flags.flash>h2{animation:flash 1.6s ease-out;border-radius:3px}
+@keyframes flash{0%,25%{background:var(--hl)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){.flash{animation:none;background:var(--hl)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-in">
+    <div class="topline">
+      <button id="back" type="button" hidden>‹ 全部</button>
+      <div class="crumb" id="crumb">急診醫學筆記</div>
+    </div>
+    <h1 id="title">急診醫學筆記</h1>
+    <div class="searchbar">
+      <input id="q" type="search" placeholder="搜尋全部頁面（HINTS、ectopic、Epley…）"
+             autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+      <button id="clr" type="button" aria-label="清除搜尋" hidden>×</button>
+    </div>
+    <nav class="jump" id="jump" aria-label="跳至段落" hidden></nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="home"></div>
+  <div id="results" hidden></div>
+  <div id="pages"><!--PAGES--></div>
+</div>
+
+<!--DATA-->
+<script>
+(function(){
+  var D = window.__DATA__ || {pages:[],index:[]};
+  var byslug = {};
+  D.pages.forEach(function(p){ byslug[p.slug] = p; });
+
+  var el = {
+    home: document.getElementById('home'),
+    results: document.getElementById('results'),
+    pages: document.getElementById('pages'),
+    q: document.getElementById('q'),
+    clr: document.getElementById('clr'),
+    jump: document.getElementById('jump'),
+    back: document.getElementById('back'),
+    crumb: document.getElementById('crumb'),
+    title: document.getElementById('title'),
+    hdr: document.querySelector('header')
+  };
+  var arts = {};
+  Array.prototype.slice.call(el.pages.children).forEach(function(a){ arts[a.dataset.slug] = a; });
+
+  /* ---------- home ---------- */
+  var TYPES = ['主訴','疾病','技巧'];
+  function buildHome(){
+    var h = '';
+    TYPES.forEach(function(t){
+      var list = D.pages.filter(function(p){ return p.type === t; });
+      if (!list.length) return;
+      list.sort(function(a,b){ return a.title.localeCompare(b.title,'zh-Hant'); });
+      h += '<div class="grp"><p class="grp-h">' + t + ' · ' + list.length + '</p><div class="rows">';
+      list.forEach(function(p){
+        h += '<a class="row' + (p.stub ? ' stub' : '') + '" href="#/' + p.slug + '">'
+           + '<span class="ic">' + (p.icon || '·') + '</span>'
+           + '<span class="tt">' + esc(p.title) + '</span>'
+           + '<span class="cc">' + esc(p.category || '') + (p.stub ? ' · 待填' : '') + '</span></a>';
+      });
+      h += '</div></div>';
+    });
+    el.home.innerHTML = h;
+  }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ---------- routing ---------- */
+  var current = null;
+  function show(slug){
+    Object.keys(arts).forEach(function(s){ arts[s].hidden = (s !== slug); });
+    current = slug || null;
+    var searching = !!el.q.value.trim();
+    el.results.hidden = !searching;
+    el.pages.hidden = searching || !slug;
+    el.home.hidden = searching || !!slug;
+    el.back.hidden = !slug;
+
+    if (slug && byslug[slug]) {
+      var p = byslug[slug];
+      el.crumb.textContent = '急診醫學筆記 / ' + p.type;
+      el.title.innerHTML = (p.icon ? p.icon + ' ' : '') + esc(p.title)
+        + (p.category ? '<span class="cat">' + esc(p.category) + '</span>' : '');
+      el.q.placeholder = '搜尋全部頁面（HINTS、ectopic、Epley…）';
+      buildJump(arts[slug]);
+    } else {
+      el.crumb.textContent = '急診醫學筆記';
+      el.title.textContent = '急診醫學筆記';
+      el.jump.hidden = true;
+    }
+  }
+  function buildJump(art){
+    var items = Array.prototype.slice.call(art.querySelectorAll('.flags, .sec'));
+    if (!items.length){ el.jump.hidden = true; return; }
+    el.jump.innerHTML = '';
+    items.forEach(function(s){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = s.dataset.nav || '段落';
+      b.addEventListener('click', function(){
+        if (s.tagName === 'DETAILS') s.open = true;
+        scrollTo_(s);
+      });
+      el.jump.appendChild(b);
+    });
+    el.jump.hidden = false;
+  }
+  function scrollTo_(node){
+    var y = node.getBoundingClientRect().top + window.pageYOffset - el.hdr.offsetHeight - 8;
+    window.scrollTo({top:y, behavior:'smooth'});
+  }
+  var pendingJump = null;
+  function route(){
+    var m = location.hash.match(/^#\/([^?]+)/);
+    show(m ? decodeURIComponent(m[1]) : null);
+    if (pendingJump){ var id = pendingJump; pendingJump = null; jump_(id); }
+    else if (!el.q.value.trim()) window.scrollTo({top:0});
+  }
+  window.addEventListener('hashchange', route);
+  el.back.addEventListener('click', function(){ location.hash = ''; });
+
+  /* ---------- search ---------- */
+  function search(term){
+    var t = term.toLowerCase();
+    var groups = {}, order = [], count = 0;
+
+    // page title / alias matches float to the top of their own group
+    D.pages.forEach(function(p){
+      var hay = (p.title + ' ' + (p.aliases || []).join(' ')).toLowerCase();
+      if (hay.indexOf(t) === -1) return;
+      if (!groups[p.slug]) { groups[p.slug] = []; order.push(p.slug); }
+      groups[p.slug].unshift({title:true});
+    });
+
+    D.index.forEach(function(r){
+      if (r.t.toLowerCase().indexOf(t) === -1) return;
+      if (!groups[r.p]) { groups[r.p] = []; order.push(r.p); }
+      groups[r.p].push(r);
+      count++;
+    });
+
+    // current page first, then 主訴 > 疾病 > 技巧
+    order.sort(function(a,b){
+      if (a === current) return -1;
+      if (b === current) return 1;
+      var ta = TYPES.indexOf(byslug[a].type), tb = TYPES.indexOf(byslug[b].type);
+      if (ta !== tb) return ta - tb;
+      return byslug[a].title.localeCompare(byslug[b].title,'zh-Hant');
+    });
+
+    if (!order.length){
+      el.results.innerHTML = '<div class="empty">沒有符合「' + esc(term) + '」的內容。<br>試試別的關鍵字，或到頁面裡加 alias。</div>';
+      return;
+    }
+
+    var h = '<p class="count">' + count + ' 筆符合，分布在 ' + order.length + ' 頁</p>';
+    order.forEach(function(slug){
+      var p = byslug[slug];
+      h += '<div class="res-grp"><div class="res-h">'
+         + '<span>' + (p.icon || '') + '</span><b>' + esc(p.title) + '</b>'
+         + '<span>' + p.type + '</span>'
+         + (slug === current ? '<span class="here">這一頁</span>' : '')
+         + '</div>';
+      groups[slug].forEach(function(r){
+        if (r.title){
+          h += '<button class="hit" data-slug="' + slug + '"><span class="sec-tag">頁面標題符合</span>'
+             + '<span class="txt">開啟這一頁 →</span></button>';
+          return;
+        }
+        h += '<button class="hit" data-slug="' + slug + '" data-id="' + r.id + '">'
+           + '<span class="sec-tag' + (r.f ? ' flag' : '') + '">' + esc(r.s) + '</span>'
+           + '<span class="txt">' + mark(r.t, term) + '</span></button>';
+      });
+      h += '</div>';
+    });
+    el.results.innerHTML = h;
+
+    Array.prototype.slice.call(el.results.querySelectorAll('.hit')).forEach(function(b){
+      b.addEventListener('click', function(){ goTo(b.dataset.slug, b.dataset.id); });
+    });
+  }
+
+  function mark(text, term){
+    var i = text.toLowerCase().indexOf(term.toLowerCase());
+    if (i === -1) return esc(text);
+    return esc(text.slice(0,i)) + '<mark>' + esc(text.slice(i,i+term.length)) + '</mark>' + esc(text.slice(i+term.length));
+  }
+
+  function goTo(slug, id){
+    el.q.value = '';
+    el.clr.hidden = true;
+    el.results.hidden = true;
+    pendingJump = id || null;
+    if (location.hash !== '#/' + slug) location.hash = '#/' + slug;
+    else route();
+  }
+
+  function jump_(id){
+    var art = arts[current];
+    var node = art && art.querySelector('[id="' + id + '"]');
+    if (!node) { window.scrollTo({top:0}); return; }
+    // open every collapsed ancestor, outermost last so layout settles once
+    var chain = [], d = node.closest('details');
+    while (d) { chain.push(d); d = d.parentElement && d.parentElement.closest('details'); }
+    chain.reverse().forEach(function(x){ x.open = true; });
+    requestAnimationFrame(function(){
+      scrollTo_(node);
+      node.classList.remove('flash');
+      void node.offsetWidth;
+      node.classList.add('flash');
+    });
+  }
+
+  var timer;
+  el.q.addEventListener('input', function(){
+    clearTimeout(timer);
+    timer = setTimeout(function(){
+      var term = el.q.value.trim();
+      el.clr.hidden = !term;
+      if (!term){ el.results.hidden = true; show(current); window.scrollTo({top:0}); return; }
+      search(term);
+      el.results.hidden = false;
+      el.pages.hidden = true;
+      el.home.hidden = true;
+      window.scrollTo({top:0});
+    }, 60);
+  });
+  el.q.addEventListener('keydown', function(e){
+    if (e.key === 'Escape'){ el.q.value=''; el.clr.hidden=true; el.results.hidden=true; show(current); el.q.blur(); }
+  });
+  el.clr.addEventListener('click', function(){
+    el.q.value=''; el.clr.hidden=true; el.results.hidden=true; show(current); el.q.focus();
+  });
+
+  buildHome();
+  route();
+})();
+</script>
+</body>
+</html>
